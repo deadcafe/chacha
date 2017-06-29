@@ -91,6 +91,9 @@ $(OBJ_DIR)/chacha_avx.o: chacha_avx.c depend
 $(OBJ_DIR)/chacha_avx2.o: chacha_avx2.c depend
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(CFLAGS_AVX2) -o $@ -c $<
 
+$(OBJ_DIR)/chacha_opt_avx2.o: chacha_opt_avx2.c depend
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(CFLAGS_AVX2) -o $@ -c $<
+
 $(OBJ_DIR)/chacha_avx512.o: chacha_avx512.c depend
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(CFLAGS_AVX512) -o $@ -c $<
 
