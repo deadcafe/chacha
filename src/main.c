@@ -163,7 +163,7 @@ benchmark(const char *name,
         struct data_s data, *data_p = &data;
         for (size_t len = sizeof(data.txt); len >= CHACHA_BLOCK_LEN; len >>= 1) {
                 size_t sum = 0;
-                unsigned loops = 1024;
+                unsigned loops = 10240;
                 uint64_t time;
                 uint32_t aux;
 
@@ -180,7 +180,7 @@ benchmark(const char *name,
                         name,
                         len,
                         (double) time / sum,
-                        (unsigned long) time / 1024,
+                        (unsigned long) time / 10240,
                         (unsigned long) time);
         }
 }

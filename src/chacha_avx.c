@@ -143,11 +143,11 @@ chacha_avx(uint8_t *dst,
                         for (unsigned i = 0; i < 16; i++)
                                 block[i] = ctx[i];
 
-                        DOUBLE_ROUNDS_X4(n,
-                                         block[0], block[1], block[2], block[3],
-                                         block[4], block[5], block[6], block[7],
-                                         block[8], block[9], block[10], block[11],
-                                         block[12], block[13], block[14], block[15]);
+                        for (unsigned i = 0; i < 10; i++)
+                                DOUBLE_ROUNDS_X4(block[0], block[1], block[2], block[3],
+                                                 block[4], block[5], block[6], block[7],
+                                                 block[8], block[9], block[10], block[11],
+                                                 block[12], block[13], block[14], block[15]);
 
                         for (unsigned i = 0; i < 16; i++)
                                 block[i] = _mm_add_epi32(ctx[i], block[i]);
@@ -265,10 +265,10 @@ chacha_avx(uint8_t *dst,
                         for (unsigned i = 0; i < 12; i++)
                                 block[i] = ctx[i];
 
-                        DOUBLE_ROUNDS_X3(n,
-                                         block[0], block[1], block[2], block[3],
-                                         block[4], block[5], block[6], block[7],
-                                         block[8], block[9], block[10], block[11]);
+                        for (unsigned i = 0; i < 10; i++)
+                                DOUBLE_ROUNDS_X3(block[0], block[1], block[2], block[3],
+                                                 block[4], block[5], block[6], block[7],
+                                                 block[8], block[9], block[10], block[11]);
 
                         for (unsigned i = 0; i < 12; i++)
                                 block[i] = _mm_add_epi32(ctx[i], block[i]);
@@ -315,9 +315,9 @@ chacha_avx(uint8_t *dst,
                         for (unsigned i = 0; i < 8; i++)
                                 block[i] = ctx[i];
 
-                        DOUBLE_ROUNDS_X2(n,
-                                         block[0], block[1], block[2], block[3],
-                                         block[4], block[5], block[6], block[7]);
+                        for (unsigned i = 0; i < 10; i++)
+                                DOUBLE_ROUNDS_X2(block[0], block[1], block[2], block[3],
+                                                 block[4], block[5], block[6], block[7]);
 
                         for (unsigned i = 0; i < 8; i++)
                                 block[i] = _mm_add_epi32(ctx[i], block[i]);
@@ -346,7 +346,8 @@ chacha_avx(uint8_t *dst,
                         for (unsigned i = 0; i < 4; i++)
                                 block[i] = ctx[i];
 
-                        DOUBLE_ROUNDS(n, block[0], block[1], block[2], block[3]);
+                        for (unsigned i = 0; i < 10; i++)
+                                DOUBLE_ROUNDS(block[0], block[1], block[2], block[3]);
 #if 0
                         dump_ctx("avx round", block[0], block[1], block[2], block[3]);
 #endif
