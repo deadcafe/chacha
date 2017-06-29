@@ -175,7 +175,7 @@ chacha_avx2(uint8_t *dst,
         dump_ctx("avx2 ctx", c_0, c_1, c_2, c_3);
 #endif
 
-        while (len) {
+        if (len) {
                 __m256i x_0;
                 __m256i x_1;
                 __m256i x_2;
@@ -211,7 +211,7 @@ chacha_avx2(uint8_t *dst,
                 __m256i t_15;
                 unsigned n = 10;	/* rounds */
 
-                if (len >= 512) {
+                while (len >= 512) {
                         const uint32_t __attribute__((aligned(32))) CNT_INC[] = {
                                 8, 0, 0, 0, 8, 0, 0, 0,
                         };
@@ -234,6 +234,7 @@ chacha_avx2(uint8_t *dst,
                         x_14= c_14;
                         x_15= c_15;
 
+                        n= 10;
                         DOUBLE_ROUNDS_X4(n,
                                          x_0,  x_1,  x_2,  x_3,
                                          x_4,  x_5,  x_6,  x_7,
@@ -305,7 +306,9 @@ chacha_avx2(uint8_t *dst,
                         src += 512;
                         dst += 512;
                         continue;
-                } else if (len >= 384) {
+                }
+
+                if (len >= 384) {
                         const uint32_t __attribute__((aligned(32))) CNT_INC[] = {
                                 6, 0, 0, 0, 6, 0, 0, 0,
                         };
@@ -324,6 +327,7 @@ chacha_avx2(uint8_t *dst,
                         x_10= c_10;
                         x_11= c_11;
 
+                        n = 10;
                         DOUBLE_ROUNDS_X3(n,
                                          x_0, x_1,  x_2,  x_3,
                                          x_4, x_5,  x_6,  x_7,
@@ -391,6 +395,7 @@ chacha_avx2(uint8_t *dst,
                         x_6 = c_6;
                         x_7 = c_7;
 
+                        n = 10;
                         DOUBLE_ROUNDS_X2(n,
                                          x_0, x_1, x_2, x_3,
                                          x_4, x_5, x_6, x_7);
@@ -440,6 +445,7 @@ chacha_avx2(uint8_t *dst,
                         x_2 = c_2;
                         x_3 = c_3;
 
+                        n = 10;
                         DOUBLE_ROUNDS(n,
                                       x_0, x_1, x_2, x_3);
 
