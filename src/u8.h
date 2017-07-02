@@ -8,25 +8,25 @@ Public domain.
 #define VEC8_ROT(a,imm) _mm256_or_si256(_mm256_slli_epi32(a,imm),_mm256_srli_epi32(a,(32-imm)))
 
 /* implements a vector quarter round by-the-book (naive!) */
-#define VEC8_QUARTERROUND_NAIVE(a,b,c,d)                                           \
-  x_##a = _mm256_add_epi32(x_##a, x_##b); t_##a = _mm256_xor_si256(x_##d, x_##a); x_##d = VEC8_ROT(t_##a, 16); \
-  x_##c = _mm256_add_epi32(x_##c, x_##d); t_##c = _mm256_xor_si256(x_##b, x_##c); x_##b = VEC8_ROT(t_##c, 12); \
-  x_##a = _mm256_add_epi32(x_##a, x_##b); t_##a = _mm256_xor_si256(x_##d, x_##a); x_##d = VEC8_ROT(t_##a,  8); \
-  x_##c = _mm256_add_epi32(x_##c, x_##d); t_##c = _mm256_xor_si256(x_##b, x_##c); x_##b = VEC8_ROT(t_##c,  7)
+#define VEC8_QUARTERROUND_NAIVE(a,b,c,d)                                \
+        x_##a = _mm256_add_epi32(x_##a, x_##b); t_##a = _mm256_xor_si256(x_##d, x_##a); x_##d = VEC8_ROT(t_##a, 16); \
+        x_##c = _mm256_add_epi32(x_##c, x_##d); t_##c = _mm256_xor_si256(x_##b, x_##c); x_##b = VEC8_ROT(t_##c, 12); \
+        x_##a = _mm256_add_epi32(x_##a, x_##b); t_##a = _mm256_xor_si256(x_##d, x_##a); x_##d = VEC8_ROT(t_##a,  8); \
+        x_##c = _mm256_add_epi32(x_##c, x_##d); t_##c = _mm256_xor_si256(x_##b, x_##c); x_##b = VEC8_ROT(t_##c,  7)
 
 /* same, but replace 2 of the shift/shift/or "rotation" by byte shuffles (8 & 16) (better) */
-#define VEC8_QUARTERROUND_SHUFFLE(a,b,c,d)                                \
-   x_##a = _mm256_add_epi32(x_##a, x_##b); t_##a = _mm256_xor_si256(x_##d, x_##a); x_##d = _mm256_shuffle_epi8(t_##a, rot16); \
-   x_##c = _mm256_add_epi32(x_##c, x_##d); t_##c = _mm256_xor_si256(x_##b, x_##c); x_##b = VEC8_ROT(t_##c, 12); \
-   x_##a = _mm256_add_epi32(x_##a, x_##b); t_##a = _mm256_xor_si256(x_##d, x_##a); x_##d = _mm256_shuffle_epi8(t_##a, rot8); \
-   x_##c = _mm256_add_epi32(x_##c, x_##d); t_##c = _mm256_xor_si256(x_##b, x_##c); x_##b = VEC8_ROT(t_##c,  7)
+#define VEC8_QUARTERROUND_SHUFFLE(a,b,c,d)                              \
+        x_##a = _mm256_add_epi32(x_##a, x_##b); t_##a = _mm256_xor_si256(x_##d, x_##a); x_##d = _mm256_shuffle_epi8(t_##a, rot16); \
+        x_##c = _mm256_add_epi32(x_##c, x_##d); t_##c = _mm256_xor_si256(x_##b, x_##c); x_##b = VEC8_ROT(t_##c, 12); \
+        x_##a = _mm256_add_epi32(x_##a, x_##b); t_##a = _mm256_xor_si256(x_##d, x_##a); x_##d = _mm256_shuffle_epi8(t_##a, rot8); \
+        x_##c = _mm256_add_epi32(x_##c, x_##d); t_##c = _mm256_xor_si256(x_##b, x_##c); x_##b = VEC8_ROT(t_##c,  7)
 
 /* same, but replace 2 of the shift/shift/or "rotation" by byte & word shuffles (8 & 16) (not as good as previous) */
-#define VEC8_QUARTERROUND_SHUFFLE2(a,b,c,d)                                \
-  x_##a = _mm256_add_epi32(x_##a, x_##b); t_##a = _mm256_xor_si256(x_##d, x_##a); x_##d = _mm256_shufflehi_epi16(_mm256_shufflelo_epi16(t_##a,0xb1),0xb1); \
-   x_##c = _mm256_add_epi32(x_##c, x_##d); t_##c = _mm256_xor_si256(x_##b, x_##c); x_##b = VEC8_ROT(t_##c, 12); \
-   x_##a = _mm256_add_epi32(x_##a, x_##b); t_##a = _mm256_xor_si256(x_##d, x_##a); x_##d = _mm256_shuffle_epi8(t_##a, rot8); \
-   x_##c = _mm256_add_epi32(x_##c, x_##d); t_##c = _mm256_xor_si256(x_##b, x_##c); x_##b = VEC8_ROT(t_##c,  7)
+#define VEC8_QUARTERROUND_SHUFFLE2(a,b,c,d)                             \
+        x_##a = _mm256_add_epi32(x_##a, x_##b); t_##a = _mm256_xor_si256(x_##d, x_##a); x_##d = _mm256_shufflehi_epi16(_mm256_shufflelo_epi16(t_##a,0xb1),0xb1); \
+        x_##c = _mm256_add_epi32(x_##c, x_##d); t_##c = _mm256_xor_si256(x_##b, x_##c); x_##b = VEC8_ROT(t_##c, 12); \
+        x_##a = _mm256_add_epi32(x_##a, x_##b); t_##a = _mm256_xor_si256(x_##d, x_##a); x_##d = _mm256_shuffle_epi8(t_##a, rot8); \
+        x_##c = _mm256_add_epi32(x_##c, x_##d); t_##c = _mm256_xor_si256(x_##b, x_##c); x_##b = VEC8_ROT(t_##c,  7)
 
 #define VEC8_QUARTERROUND(a,b,c,d) VEC8_QUARTERROUND_SHUFFLE(a,b,c,d)
 

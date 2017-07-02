@@ -43,69 +43,130 @@
 
 #define VEC8_ROT(a,imm) _mm256_or_si256(_mm256_slli_epi32(a,imm),_mm256_srli_epi32(a,(32-imm)))
 
-#define VEC8_LINE1(a,b,c,d)                                             \
-        do {                                                            \
-                x_##a = _mm256_add_epi32(x_##a, x_##b); \
-                x_##d = _mm256_shuffle_epi8(_mm256_xor_si256(x_##d, x_##a), rot16); \
-        } while (0)
-
-#define VEC8_LINE2(a,b,c,d)                                             \
-        do {                                                            \
-                x_##c = _mm256_add_epi32(x_##c, x_##d);                 \
-                x_##b = VEC8_ROT(_mm256_xor_si256(x_##b, x_##c), 12);   \
-        } while (0)
-
-#define VEC8_LINE3(a,b,c,d)                                             \
-        do {                                                            \
-                x_##a = _mm256_add_epi32(x_##a, x_##b);                 \
-                x_##d = _mm256_shuffle_epi8(_mm256_xor_si256(x_##d, x_##a), rot8); \
-        } while (0)
-
-#define VEC8_LINE4(a,b,c,d)                                             \
-        do {                                                            \
-                x_##c = _mm256_add_epi32(x_##c, x_##d);                 \
-                x_##b = VEC8_ROT(_mm256_xor_si256(x_##b, x_##c), 7);    \
-        } while (0)
-
-#define VEC8_ROUND(a1,b1,c1,d1, a2,b2,c2,d2, a3,b3,c3,d3, a4,b4,c4,d4)  \
-        do {                                                            \
-                VEC8_LINE1(a1,b1,c1,d1);                                \
-                VEC8_LINE1(a2,b2,c2,d2);                                \
-                VEC8_LINE1(a3,b3,c3,d3);                                \
-                VEC8_LINE1(a4,b4,c4,d4);                                \
-                                                                        \
-                VEC8_LINE2(a1,b1,c1,d1);                                \
-                VEC8_LINE2(a2,b2,c2,d2);                                \
-                VEC8_LINE2(a3,b3,c3,d3);                                \
-                VEC8_LINE2(a4,b4,c4,d4);                                \
-                                                                        \
-                VEC8_LINE3(a1,b1,c1,d1);                                \
-                VEC8_LINE3(a2,b2,c2,d2);                                \
-                VEC8_LINE3(a3,b3,c3,d3);                                \
-                VEC8_LINE3(a4,b4,c4,d4);                                \
-                                                                        \
-                VEC8_LINE4(a1,b1,c1,d1);                                \
-                VEC8_LINE4(a2,b2,c2,d2);                                \
-                VEC8_LINE4(a3,b3,c3,d3);                                \
-                VEC8_LINE4(a4,b4,c4,d4);                                \
-        } while (0)
-
-
-
-
-
-
 
 
 /*
  *
  */
+#define VEC8_LINE0(r0,r1,r2,r3)                                         \
+        do {                                                            \
+                r0 = _mm256_add_epi32(r0, r1);                          \
+                r3 = _mm256_shuffle_epi8(_mm256_xor_si256(r3, r0), ROT16); \
+        } while (0)
+
+#define VEC8_LINE1(r0,r1,r2,r3)                                         \
+        do {                                                            \
+                r2 = _mm256_add_epi32(r2, r3);                          \
+                r1 = VEC8_ROT(_mm256_xor_si256(r1, r2), 12);            \
+        } while (0)
+
+#define VEC8_LINE2(r0,r1,r2,r3)                                         \
+        do {                                                            \
+                r0 = _mm256_add_epi32(r0, r1);                          \
+                r3 = _mm256_shuffle_epi8(_mm256_xor_si256(r3, r0), ROT8); \
+        } while (0)
+
+#define VEC8_LINE3(r0,r1,r2,r3)                                         \
+        do {                                                            \
+                r2 = _mm256_add_epi32(r2, r3);                          \
+                r1 = VEC8_ROT(_mm256_xor_si256(r1, r2), 7);             \
+        } while (0)
+
+/*
+ * 128 bit xN R<->C
+ */
+#define R_ROT_128X2(r0,r1,r2,r3)                                        \
+        do {                                                            \
+                _mm256_or_si256(_mm256_srli_si256(r1,32/8), _mm256_slli_si256(r1,96/8)); \
+                _mm256_or_si256(_mm256_srli_si256(r2,64/8), _mm256_slli_si256(r2,64/8)); \
+                _mm256_or_si256(_mm256_srli_si256(r3,96/8), _mm256_slli_si256(r3,32/8)); \
+        } while (0)
+
+#define L_ROT_128X2(r0,r1,r2,r3)                                        \
+        do {                                                            \
+                _mm256_or_si256(_mm256_slli_si256(r1,32/8), _mm256_srli_si256(r1,96/8)); \
+                _mm256_or_si256(_mm256_slli_si256(r2,64/8), _mm256_srli_si256(r2,64/8)); \
+                _mm256_or_si256(_mm256_slli_si256(r3,96/8), _mm256_srli_si256(r3,32/8)); \
+        } while (0)
+                
+
+/*
+ * 32x8  (128x4)
+ */
+#define VEC8_ROUND(a0,b0,c0,d0, a1,b1,c1,d1, a2,b2,c2,d2, a3,b3,c3,d3)  \
+        do {                                                            \
+                VEC8_LINE0(a0,b0,c0,d0);                                \
+                VEC8_LINE0(a1,b1,c1,d1);                                \
+                VEC8_LINE0(a2,b2,c2,d2);                                \
+                VEC8_LINE0(a3,b3,c3,d3);                                \
+                                                                        \
+                VEC8_LINE1(a0,b0,c0,d0);                                \
+                VEC8_LINE1(a1,b1,c1,d1);                                \
+                VEC8_LINE1(a2,b2,c2,d2);                                \
+                VEC8_LINE1(a3,b3,c3,d3);                                \
+                                                                        \
+                VEC8_LINE2(a0,b0,c0,d0);                                \
+                VEC8_LINE2(a1,b1,c1,d1);                                \
+                VEC8_LINE2(a2,b2,c2,d2);                                \
+                VEC8_LINE2(a3,b3,c3,d3);                                \
+                                                                        \
+                VEC8_LINE3(a0,b0,c0,d0);                                \
+                VEC8_LINE3(a1,b1,c1,d2);                                \
+                VEC8_LINE3(a2,b2,c2,d2);                                \
+                VEC8_LINE3(a3,b3,c3,d3);                                \
+        } while (0)
+
+
+#define PERMUTE2X128(d0,d1,d2,d3,s0,s1,s2,s3)                         \
+        do {                                                          \
+                d0 = _mm256_permute2x128_si256(s0, s1, 0x20);         \
+                d2 = _mm256_permute2x128_si256(s0, s1, 0x31);         \
+                d1 = _mm256_permute2x128_si256(s2, s3, 0x20);         \
+                d3 = _mm256_permute2x128_si256(s2, s3, 0x31);         \
+        } while (0)
+
+/*
+
+  basic(32 x 16(1 block), 128 x 16(4 blocks), 256 x 16(8 blocks)):
+  	128: 32 x 4
+        256: 32 x 8
+        v0: block (0-7): 
+
+  vN: vector N(block 0-7
+
+  QUARTERROUND(v0, v4,  v8, v12);
+  QUARTERROUND(v1, v5,  v9, v13);
+  QUARTERROUND(v2, v6, v10, v14);
+  QUARTERROUND(v3, v7, v11, v15);
+  QUARTERROUND(v0, v5, v10, v15);
+  QUARTERROUND(v1, v6, v11, v12);
+  QUARTERROUND(v2, v7,  v8, v13);
+  QUARTERROUND(v3, v4,  v9, v14);
+
+
+
+ */
+
+/*
+ *
+ */
+static inline void
+dump_ymm(const char *msg,
+         const __m256i ymm)
+{
+        uint8_t __attribute__((aligned(32))) buff[32];
+
+        _mm256_store_si256((__m256i *) buff,  ymm);
+
+        HEXDUMP(msg, buff, sizeof(buff));
+}
+
 static inline void
 dump_ctx(const char *msg,
-         __m256i ymm0,
-         __m256i ymm1,
-         __m256i ymm2,
-         __m256i ymm3)
+         const __m256i ymm0,
+         const __m256i ymm1,
+         const __m256i ymm2,
+         const __m256i ymm3)
 {
         uint8_t __attribute__((aligned(32))) buff[128];
 
@@ -116,16 +177,6 @@ dump_ctx(const char *msg,
 
         HEXDUMP(msg, buff, sizeof(buff));
 }
-
-#define PERMUTE2X128(d0,d1,d2,d3,s0,s1,s2,s3)                         \
-        do {                                                          \
-                d0 = _mm256_permute2x128_si256(s0, s1, 0x20);         \
-                d2 = _mm256_permute2x128_si256(s0, s1, 0x31);         \
-                d1 = _mm256_permute2x128_si256(s2, s3, 0x20);         \
-                d3 = _mm256_permute2x128_si256(s2, s3, 0x31);         \
-        } while (0)
-
-
 
 
 /*
@@ -180,6 +231,8 @@ chacha_avx2(uint8_t *dst,
                 c_2 = _mm256_permutevar8x32_epi32(x, y);
                 c_3 = _mm256_load_si256((const __m256i *) ctr_salt_iv);
 
+                dump_ctx("avx2 ctx", c_0, c_1, c_2, c_3);
+
                 if (len > 384) {
                         c_12 = c_8 = c_4 = c_0;
                         c_13 = c_9 = c_5 = c_1;
@@ -223,14 +276,22 @@ chacha_avx2(uint8_t *dst,
 #endif
 
         while (len >= 512) {
-                __m256i rot16 = _mm256_set_epi8(13,12,15,14, 9, 8,11,10,
-                                                 5, 4, 7, 6, 1, 0, 3, 2,
-                                                13,12,15,14, 9, 8,11,10,
-                                                 5, 4, 7, 6, 1, 0, 3, 2);
-                __m256i rot8  = _mm256_set_epi8(14,13,12,15,10, 9, 8,11,
-                                                 6, 5, 4, 7, 2, 1, 0, 3,
-                                                14,13,12,15,10, 9, 8,11,
-                                                 6, 5, 4, 7, 2, 1, 0, 3);
+                const __m256i ROT16 = _mm256_set_epi8(13,12,15,14,
+                                                       9, 8,11,10,
+                                                       5, 4, 7, 6,
+                                                       1, 0, 3, 2,
+                                                      13,12,15,14,
+                                                       9, 8,11,10,
+                                                       5, 4, 7, 6,
+                                                       1, 0, 3, 2);
+                const __m256i ROT8  = _mm256_set_epi8(14,13,12,15,
+                                                      10, 9, 8,11,
+                                                       6, 5, 4, 7,
+                                                       2, 1, 0, 3,
+                                                      14,13,12,15,
+                                                      10, 9, 8,11,
+                                                       6, 5, 4, 7,
+                                                       2, 1, 0, 3);
 
                 __m256i x_0 = c_0;
                 __m256i x_1 = c_1;
@@ -257,8 +318,14 @@ chacha_avx2(uint8_t *dst,
                                          x_12, x_13, x_14, x_15);
 #else
                 for (unsigned i = 0; i < 10; i++) {
-                        VEC8_ROUND( 0, 4, 8, 12, 1, 5,  9, 13, 2, 6, 10, 14, 3, 7, 11, 15);
-                        VEC8_ROUND( 0, 5,10, 15, 1, 6, 11, 12, 2, 7,  8, 13, 3, 4,  9, 14);
+                        VEC8_ROUND( x_0, x_4, x_8,  x_12,
+                                    x_1, x_5, x_9,  x_13,
+                                    x_2, x_6, x_10, x_14,
+                                    x_3, x_7, x_11, x_15);
+                        VEC8_ROUND( x_0, x_5, x_10, x_15,
+                                    x_1, x_6, x_11, x_12,
+                                    x_2, x_7, x_8,  x_13,
+                                    x_3, x_4, x_9,  x_14);
                 }
 #endif
 
@@ -504,12 +571,18 @@ chacha_avx2(uint8_t *dst,
                 for (unsigned i = 0; i < 10; i++)
                         DOUBLE_ROUNDS(x_0, x_1, x_2, x_3);
 
+                dump_ctx("avx2 double", x_0, x_1, x_2, x_3);
+
                 __m256i t_0 = _mm256_add_epi32(c_0, x_0);
                 __m256i t_1 = _mm256_add_epi32(c_1, x_1);
                 __m256i t_2 = _mm256_add_epi32(c_2, x_2);
                 __m256i t_3 = _mm256_add_epi32(c_3, x_3);
 
+                dump_ctx("avx2 round", t_0, t_1, t_2, t_3);
+
                 PERMUTE2X128(x_0, x_1, x_2, x_3, t_0, t_1, t_2, t_3);
+
+                dump_ctx("avx2 permute", x_0, x_1, x_2, x_3);
 
                 if (len >= 96) {
                         t_0 = _mm256_xor_si256(x_0, _mm256_loadu_si256((const __m256i *) (src +  0)));

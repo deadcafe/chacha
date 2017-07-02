@@ -67,6 +67,7 @@ double_round(struct chacha_ctx_s *st)
         QUARTER_ROUND(st->v32[1], st->v32[5], st->v32[9],  st->v32[13]);
         QUARTER_ROUND(st->v32[2], st->v32[6], st->v32[10], st->v32[14]);
         QUARTER_ROUND(st->v32[3], st->v32[7], st->v32[11], st->v32[15]);
+
         QUARTER_ROUND(st->v32[0], st->v32[5], st->v32[10], st->v32[15]);
         QUARTER_ROUND(st->v32[1], st->v32[6], st->v32[11], st->v32[12]);
         QUARTER_ROUND(st->v32[2], st->v32[7], st->v32[8],  st->v32[13]);
@@ -87,16 +88,13 @@ chacha_rounds(struct chacha_ctx_s *block,
                 double_round(block);
                 num_rounds -= 2;
         }
-#if 0
-        HEXDUMP("gen round", block, sizeof(*block));
+#if 1
+        HEXDUMP("gen double", block, sizeof(*block));
 #endif
 
         for (unsigned i = 0; i < 16; ++i)
                 block->v32[i] = PLUS(block->v32[i], ctx->v32[i]);
 
-#if 0
-        HEXDUMP("gen", block, sizeof(*block));
-#endif
 }
 
 /*
@@ -112,6 +110,11 @@ chacha_block(const struct chacha_ctx_s *ctx,
         uint8_t *p = (uint8_t *) &block;
 
         chacha_rounds(&block, ctx, 20);
+
+#if 1
+        HEXDUMP("gen rounds", &block, sizeof(block));
+#endif
+
         for (unsigned i = 0; i < len; i++)
                 dst[i] = src[i] ^ p[i];
 }
@@ -134,7 +137,7 @@ chacha_init(struct chacha_ctx_s *ctx,
 
         ctx->v32[12] = 1;
 
-#if 0
+#if 1
         HEXDUMP("gen ctx", ctx, sizeof(*ctx));
 #endif
 }
@@ -158,9 +161,6 @@ chacha_gen(uint8_t *dst,
                 size_t size;
 
                 size = CHACHA_BLOCK_LEN > len ? len : CHACHA_BLOCK_LEN;
-#if 0
-                HEXDUMP("gen ctx", &ctx, sizeof(ctx));
-#endif
                 chacha_block(&ctx, dst, src, size);
 
                 ctx.v32[12] += 1;
