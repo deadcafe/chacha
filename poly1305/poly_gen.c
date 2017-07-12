@@ -81,7 +81,7 @@ poly1305_update_gen(struct poly_ctx_s *ctx,
 		d0 = ((uint128_t) h0 * r0);
                 d  = ((uint128_t) h1 * s2);
                 d0 += d;
-                d = ((uint128_t) h2 * s1);
+                d  = ((uint128_t) h2 * s1);
                 d0 += d;
 
 		d1 = ((uint128_t) h0 * r1);
@@ -96,10 +96,21 @@ poly1305_update_gen(struct poly_ctx_s *ctx,
                 d  = ((uint128_t) h2 * r0);
                 d2 += d;
 
-                              c = d0 >> 44;    h0 = (uint64_t) d0 & 0xfffffffffff;
-                d1 += c;      c = d1 >> 44;    h1 = (uint64_t) d1 & 0xfffffffffff;
-		d2 += c;      c = d2 >> 42;    h2 = (uint64_t) d2 & 0x3ffffffffff;
-		h0  += c * 5; c = (h0 >> 44);  h0 =            h0 & 0xfffffffffff;
+                c = d0 >> 44;
+                h0 = (uint64_t) d0 & 0xfffffffffff;
+
+                d1 += c;
+                c  = d1 >> 44;
+                h1 = (uint64_t) d1 & 0xfffffffffff;
+
+		d2 += c;
+                c  = d2 >> 42;
+                h2 = (uint64_t) d2 & 0x3ffffffffff;
+
+		h0 += c * 5;
+                c  = (h0 >> 44);
+                h0 = h0 & 0xfffffffffff;
+
 		h1  += c;
 
 		m += POLY_BLOCK_SIZE_IN_BYTES;
@@ -129,30 +140,54 @@ poly1305_fin_gen(uint8_t *tag,
 		ctx->buff[i] = 1;
 		for (i = i + 1; i < POLY_BLOCK_SIZE_IN_BYTES; i++)
 			ctx->buff[i] = 0;
-		poly1305_update_gen(ctx, ctx->buff, POLY_BLOCK_SIZE_IN_BYTES, true);
+		poly1305_update_gen(ctx, ctx->buff,
+                                    POLY_BLOCK_SIZE_IN_BYTES, true);
 	}
 
 	h0 = ctx->h[0];
 	h1 = ctx->h[1];
 	h2 = ctx->h[2];
 
-	             c = (h1 >> 44); h1 &= 0xfffffffffff;
-	h2 += c;     c = (h2 >> 42); h2 &= 0x3ffffffffff;
-	h0 += c * 5; c = (h0 >> 44); h0 &= 0xfffffffffff;
-	h1 += c;     c = (h1 >> 44); h1 &= 0xfffffffffff;
-	h2 += c;     c = (h2 >> 42); h2 &= 0x3ffffffffff;
-	h0 += c * 5; c = (h0 >> 44); h0 &= 0xfffffffffff;
+        c = (h1 >> 44);
+        h1 &= 0xfffffffffff;
+
+	h2 += c;
+        c  = (h2 >> 42);
+        h2 &= 0x3ffffffffff;
+
+	h0 += c * 5;
+        c  = (h0 >> 44);
+        h0 &= 0xfffffffffff;
+
+	h1 += c;
+        c  = (h1 >> 44);
+        h1 &= 0xfffffffffff;
+
+	h2 += c;
+        c  = (h2 >> 42);
+        h2 &= 0x3ffffffffff;
+
+	h0 += c * 5;
+        c  = (h0 >> 44);
+        h0 &= 0xfffffffffff;
+
 	h1 += c;
 
-	g0 = h0 + 5; c = (g0 >> 44); g0 &= 0xfffffffffff;
-	g1 = h1 + c; c = (g1 >> 44); g1 &= 0xfffffffffff;
+	g0 = h0 + 5;
+        c  = (g0 >> 44);
+        g0 &= 0xfffffffffff;
+
+	g1 = h1 + c;
+        c  = (g1 >> 44);
+        g1 &= 0xfffffffffff;
+
 	g2 = h2 + c - (UINT64_C(1) << 42);
 
 	c = (g2 >> ((sizeof(uint64_t) * 8) - 1)) - 1;
 	g0 &= c;
 	g1 &= c;
 	g2 &= c;
-	c = ~c;
+	c  = ~c;
 	h0 = (h0 & c) | g0;
 	h1 = (h1 & c) | g1;
 	h2 = (h2 & c) | g2;
@@ -160,9 +195,16 @@ poly1305_fin_gen(uint8_t *tag,
 	t0 = ctx->pad[0];
 	t1 = ctx->pad[1];
 
-	h0 += (( t0                    ) & 0xfffffffffff)    ; c = (h0 >> 44); h0 &= 0xfffffffffff;
-	h1 += (((t0 >> 44) | (t1 << 20)) & 0xfffffffffff) + c; c = (h1 >> 44); h1 &= 0xfffffffffff;
-	h2 += (((t1 >> 24)             ) & 0x3ffffffffff) + c;                 h2 &= 0x3ffffffffff;
+	h0 += (( t0                    ) & 0xfffffffffff);
+        c = (h0 >> 44);
+        h0 &= 0xfffffffffff;
+
+	h1 += (((t0 >> 44) | (t1 << 20)) & 0xfffffffffff) + c;
+        c = (h1 >> 44);
+        h1 &= 0xfffffffffff;
+
+	h2 += (((t1 >> 24)             ) & 0x3ffffffffff) + c;
+        h2 &= 0x3ffffffffff;
 
 	h0 = ((h0      ) | (h1 << 44));
 	h1 = ((h1 >> 20) | (h2 << 24));

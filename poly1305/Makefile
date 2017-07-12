@@ -72,8 +72,8 @@ LIBS =
 
 CFLAGS_GEN    = -O3 -march=native
 CFLAGS_SSE    = -O3 -msse4
-CFLAGS_AVX    = -O3 -mavx -msse4
-CFLAGS_AVX2   = -O3 -mavx2 -mavx
+CFLAGS_AVX    = -O3 -mavx
+CFLAGS_AVX2   = -O3 -mavx2
 CFLAGS_AVX512 = -O3 -mavx2
 
 #-mavx512f -mavx512bw -mavx512dq -mavx512vl
@@ -85,6 +85,9 @@ $(TARGET):	$(OBJS)
 	$(CC) -o $@ $^ $(LIBS) $(LDFLAGS)
 
 $(OBJ_DIR)/poly_gen.o: poly_gen.c depend
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(CFLAGS_SSE) -o $@ -c $<
+
+$(OBJ_DIR)/poly_sse.o: poly_sse.c depend
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(CFLAGS_SSE) -o $@ -c $<
 
 depend:	$(OBJ_DIR) Makefile
